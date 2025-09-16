@@ -1,0 +1,17 @@
+{
+  "name": "dernier-metro",
+  "version": "1.0.0",
+  "description": "API last metro",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "test": ""
+  },
+  "keywords": ["metro", "paris", "api", "express"],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.21.2"
+  }
+}
