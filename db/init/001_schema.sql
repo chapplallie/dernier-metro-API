@@ -1,0 +1,6 @@
+CREATE TABLE IF NOT EXISTS config (
+    id SERIAL PRIMARY KEY,
+    key TEXT UNIQUE NOT NULL,
+    value JSONB NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+);

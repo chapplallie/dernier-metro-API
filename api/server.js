@@ -1,10 +1,20 @@
 "use strict";
 
+const { Pool } = require('pg');
 const express = require("express");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware
+require('dotenv').config({ path: '../.env' });
+const dbpool = new Pool({
+    user: process.env.POSTGRES_USER,
+    host: process.env.POSTGRES_HOST,
+    database: process.env.POSTGRES_DB,
+    password: process.env.POSTGRES_PASSWORD,
+    port: 5432,
+});
+
+// Logger
 app.use((req, res, next) => {
     const t0 = Date.now();
 
@@ -15,6 +25,25 @@ app.use((req, res, next) => {
     });
 
     next();
+});
+
+//Db health
+app.get("/db-health", async (_req, res) => {
+    try {
+        const result = await dbpool.query('SELECT * FROM information_schema.tables LIMIT 1');
+        return res.status(200).json({
+            status: "ok",
+            result: result.rows[0],
+            message: "Database connection is healthy"
+        });
+    } catch (err) {
+        console.error('Database connection error:', err);
+        return res.status(500).json({
+            status: "error",
+            message: "Database connection failed",
+            error: err.message
+        });
+    }
 });
 
 function nextArrival(now = new Date(), headwayMin = 3) {
