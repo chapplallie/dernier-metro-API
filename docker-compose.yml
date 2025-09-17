@@ -1,0 +1,25 @@
+services:
+  api:
+    build: .
+    image: dernier-metro-api:v1
+    environment:
+      - PORT=5000
+    ports:
+      - "5000:5000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 1s
+
+  swagger:
+    image: swaggerapi/swagger-ui:5
+    environment:
+      - SWAGGER_JSON=/app/swagger/swagger.yaml
+    volumes:
+      - ./openapi:/usr/share/nginx/html/openapi:ro
+    ports:
+      - "8080:8080"
+    depends_on:
+      - api

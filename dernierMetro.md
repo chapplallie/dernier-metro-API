@@ -83,3 +83,36 @@ Erreurs:
 - Conclusion: "Vous avez une API testable localement et dans un conteneur. Cet apres-midi, on ajoute la doc et on orchestre." 
 
 > Note: ce projet est pedagogique; les horaires et lignes sont simules. Aucune integration RATP temps reel n'est requise.
+
+
+# Challenge bonus (pour les rapides) — 3 points max
+Trois mini-défis indépendants, en continuité directe du MVP. 1 point par défi validé.
+
+## Défi A — Rendre la fenêtre et la fréquence configurables via ENV (1 pt)
+Ajouter des variables d'environnement (avec valeurs par défaut si absentes):
+HEADWAY_MIN (par défaut: 3)
+LAST_WINDOW_START au format HH:MM (par défaut: 00:45)
+SERVICE_END au format HH:MM (par défaut: 01:15)
+Utiliser ces variables dans le calcul nextArrival.
+
+Critères de validation:
+En lançant avec HEADWAY_MIN=5, la réponse expose headwayMin: 5 et les horaires sont espacés de 5 min.
+En lançant avec LAST_WINDOW_START=00:40, isLast devient true plus tôt.
+
+## Défi B — N prochains passages (1 pt)
+Étendre GET /next-metro?station=NAME&n=3 pour retourner les N prochains passages (limiter N entre 1 et 5).
+Réponse proposée:
+
+Critères de validation:
+n=3 renvoie exactement 3 horaires espacés de headwayMin.
+Si n est absent, comportement MVP inchangé (1 seul horaire) OU n=1 par défaut (au choix, mais documenter).
+
+## Défi C — Validation station + suggestions (1 pt)
+Si station est inconnue, renvoyer 404 avec:
+Implémenter une suggestion simple par correspondance préfixe/substring dans une petite liste locale de stations (5–10 entrées suffisent). Optionnel: charger depuis un CSV plus tard.
+Critères de validation:
+station=Chate retourne un 404 avec suggestions contenant "Chatelet".
+station=Zzz retourne un 404 avec suggestions: [].
+Astuce: conservez des réponses strictement JSON, loguez les tentatives (méthode, chemin, statut, durée), et documentez clairement tout nouveau paramètre (ENV ou query) dans le README.
+{ "error": "unknown station", "suggestions": ["Chatelet", "Concorde"] }
+{"station": "Chatelet","line": "M1","headwayMin":

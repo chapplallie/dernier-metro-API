@@ -4,7 +4,7 @@ const express = require("express");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware for logging (should be before routes)
+// Middleware
 app.use((req, res, next) => {
     const t0 = Date.now();
 
@@ -94,7 +94,7 @@ app.get("/next-metro", (req, res) => {
     return res.status(200).json(result);
 });
 
-// 404 catch-all handler (should be last)
+// 404
 app.use((req, res, next) => {
     return res.status(404).json({
         message: "La route demandée est introuvable",
