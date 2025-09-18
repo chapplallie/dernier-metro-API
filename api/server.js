@@ -123,6 +123,44 @@ app.get("/next-metro", (req, res) => {
     return res.status(200).json(result);
 });
 
+app.get("/last-metro", async (req, res) => {
+    const station = req.query.station;
+    if (!station) {
+        return res.status(400).json({ error: "missing station" });
+    }
+    try {
+        const defaultsResult = await dbpool.query("SELECT value FROM config WHERE key = 'metro.defaults'");
+        if (defaultsResult.rows.length === 0) {
+            return res.status(500).json({ error: "metro.defaults not found in DB" });
+        }
+        const defaults = defaultsResult.rows[0].value;
+        const lastResult = await dbpool.query(
+            "SELECT value FROM config WHERE key = 'metro.last'"
+        );
+        if (lastResult.rows.length === 0) {
+            return res.status(500).json({ error: "metro.last not found in DB" });
+        }
+        const lastMap = lastResult.rows[0].value;
+        // Find lastMetro for station (case-insensitive)
+        const stationKey = Object.keys(lastMap).find(
+            k => k.toLowerCase() === station.toLowerCase()
+        );
+        if (!stationKey) {
+            return res.status(404).json({ error: "unknown station" });
+        }
+        const lastMetro = lastMap[stationKey];
+        return res.status(200).json({
+            station: stationKey,
+            lastMetro,
+            line: defaults.line,
+            tz: defaults.tz
+        });
+    } catch (err) {
+        console.error("/last-metro error:", err);
+        return res.status(500).json({ error: "internal error", details: err.message });
+    }
+});
+
 // 404
 app.use((req, res, next) => {
     return res.status(404).json({

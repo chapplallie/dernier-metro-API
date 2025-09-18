@@ -115,4 +115,53 @@ station=Chate retourne un 404 avec suggestions contenant "Chatelet".
 station=Zzz retourne un 404 avec suggestions: [].
 Astuce: conservez des réponses strictement JSON, loguez les tentatives (méthode, chemin, statut, durée), et documentez clairement tout nouveau paramètre (ENV ou query) dans le README.
 { "error": "unknown station", "suggestions": ["Chatelet", "Concorde"] }
-{"station": "Chatelet","line": "M1","headwayMin":
+{"station": "Chatelet","line": "M1","headwayMin":}
+
+
+
+
+# Objectif du jour : terminer 04 → 07. Deadline: ce soir
+## 04 — db-endpoints (finir)
+/next-metro : endpoint “métier minimal” qui ne lit pas la DB.
+Reçoit ?station= (obligatoire).
+Répond 200 avec { station, line: "M1", headwayMin: 3, nextArrival: "HH:MM" }.
+Erreur 400 si station manquant.
+
+/last-metro : lit la DB via la table config avec 2 clés :
+metro.defaults (objets globaux, ex. { line, tz })
+metro.last (map NomStation -> "HH:MM").
+Reçoit ?station= (obligatoire, insensible à la casse).
+Répond 200 avec { station, lastMetro, line, tz }.
+Erreurs : 400 si station manquant, 404 si station inconnue, 500 si erreur interne.
+
+## 05 — openapi-docs (mise à jour)
+Ajouter GET /next-metro et GET /last-metro avec :
+paramètre query station (requis, string).
+200 : schémas de réponse conformes (voir ci-dessus).
+400/404/500 : objets d’erreur { error: string, ... }.
+Valider le schéma (outil habituel) et vérifier l’affichage dans Swagger UI.
+
+## 06 — unit-tests (Jest)
+Cible : la fonction utilitaire de calcul d’horaire (celle qui produit "HH:MM" à partir d’un headwayMin).
+Consignes : figez l’heure courante (mock de Date), testez au moins :
+headway = 3 → retour +3 min au bon format "HH:MM".
+valeur par défaut (pas de headway passé) → même résultat qu’avec 3.
+headway invalide (≤0) → erreur ou valeur nulle (à définir et tester).
+DoD : 2–3 tests unitaires verts sans toucher à la DB.
+
+## 07 — integration-tests (Supertest + vraie DB)
+Pré-requis : la DB contient bien metro.defaults et metro.last (seed).
+Cas à couvrir pour /last-metro :
+200 avec station connue (peu importe la casse) → contient station, lastMetro, line, tz.
+404 avec station inconnue.
+400 sans station.
+Cas minimal pour /next-metro : 200 avec station, et nextArrival au format "HH:MM".
+
+# Livrables attendus
+04 : branche sur votre répo + capture GET /last-metro?station=... (DB lue) et GET /next-metro?station=....
+05 : branche sur votre répo + validation OpenAPI + Swagger à jour.
+06 : branche sur votre répo + sortie npm test (unit).
+07 : branche sur votre répo + sortie npm test (inté) avec DB réelle.
+Branches suggérées : 04-db-endpoints, 05-openapi-docs, 06-unit-tests, 07-integration-tests.
+pushé le code sur votre répo perso, et me partager le liens svp ( projet public )
+ 
