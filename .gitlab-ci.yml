@@ -5,7 +5,6 @@ cache:
   paths:
     - node_modules/
 
-
 test:
   stage: test
   image: node:20
