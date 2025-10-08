@@ -1,19 +1,10 @@
 stages:
-  - lint
   - test
 
 cache:
   paths:
     - node_modules/
 
-lint:
-  stage: lint
-  image: node:20
-  script:
-    - npm ci
-  only:
-    - merge_requests
-    - pushes
 
 test:
   stage: test
