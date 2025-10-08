@@ -88,39 +88,48 @@ app.get("/health", (req, res) => {
     });
 });
 
-app.get("/next-metro", (req, res) => {
+app.get("/next-metro", async (req, res) => {
     const station = req.query.station;
-
     if (!station) {
         return res.status(400).json({
             message: "Le paramètre station est obligatoire",
             error: "missing station"
         });
     }
+    try {
+        const found = await dbpool.query(
+            "SELECT 1 FROM stations WHERE LOWER(name) = LOWER($1) LIMIT 1",
+            [station]
+        );
 
-    const timing = nextArrival();
-    
-    // If service = closed
-    if (timing.service === 'closed') {
+        if (found.rowCount === 0) {
+            return res.status(404).json({ message: "station inconnu", error: "unknown station" });
+        }
+
+        const timing = nextArrival();
+
+        if (timing.service === 'closed') {
+            return res.status(200).json({
+                station,
+                line: "M8",
+                service: "closed",
+                message: "Le metro est fermé",
+                tz: timing.tz
+            });
+        }
+
         return res.status(200).json({
-            station: station,
+            station,
             line: "M7",
-            service: "closed",
-            message: "Le metro est fermé",
+            headwayMin: timing.headwayMin,
+            nextArrival: timing.nextArrival,
+            isLast: timing.isLast,
             tz: timing.tz
         });
+    } catch (err) {
+        console.error("/next-metro error:", err);
+        return res.status(500).json({ message: "Database error", error: err.message });
     }
-
-    const result = {
-        station: station,
-        line: "M7",
-        headwayMin: timing.headwayMin,
-        nextArrival: timing.nextArrival,
-        isLast: timing.isLast,
-        tz: timing.tz
-    };
-    
-    return res.status(200).json(result);
 });
 
 app.get("/last-metro", async (req, res) => {
@@ -128,6 +137,7 @@ app.get("/last-metro", async (req, res) => {
     if (!station) {
         return res.status(400).json({ error: "missing station" });
     }
+    const stationParam = station.trim();
     try {
         const defaultsResult = await dbpool.query("SELECT value FROM config WHERE key = 'metro.defaults'");
         if (defaultsResult.rows.length === 0) {
@@ -138,19 +148,19 @@ app.get("/last-metro", async (req, res) => {
             "SELECT value FROM config WHERE key = 'metro.last'"
         );
         if (lastResult.rows.length === 0) {
-            return res.status(500).json({ error: "metro.last not found in DB" });
+            return res.status(404).json({ error: "metro.last not found in DB" });
         }
         const lastMap = lastResult.rows[0].value;
         // Find lastMetro for station (case-insensitive)
         const stationKey = Object.keys(lastMap).find(
-            k => k.toLowerCase() === station.toLowerCase()
+            k => k.toLowerCase() === stationParam.toLowerCase()
         );
         if (!stationKey) {
             return res.status(404).json({ error: "unknown station" });
         }
         const lastMetro = lastMap[stationKey];
         return res.status(200).json({
-            station: stationKey,
+            station: stationParam.toLowerCase(),
             lastMetro,
             line: defaults.line,
             tz: defaults.tz
@@ -169,6 +179,4 @@ app.use((req, res, next) => {
     });
 });
 
-app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
-});
+module.exports = { app, dbpool };

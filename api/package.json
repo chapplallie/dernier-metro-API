@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js",
-    "test": ""
+    "test": "jest",
+    "test:coverage": "jest --coverage"
   },
   "keywords": [
     "metro",
@@ -22,5 +23,9 @@
     "pg": "^8.16.3",
     "swagger-ui-express": "^5.0.1",
     "yamljs": "^0.3.0"
+  },
+  "devDependencies": {
+    "jest": "^30.2.0",
+    "supertest": "^7.1.4"
   }
 }

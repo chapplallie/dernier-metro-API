@@ -4,7 +4,7 @@ info:
   title: Dernier Métro API
   version: 1.0.0
 servers:
-  - url: http://localhost:5000
+  - url: http://localhost:3000
 paths:
   /health:
     get:
@@ -18,8 +18,30 @@ paths:
                 type: object
                 properties:
                   status:
-                    type: string
+                    type: ok
                   service:
+                    type: up and running
+  /db-health:
+    get:
+      summary: Database health check
+      responses:
+        '200':
+          description: Database OK
+          content:
+            application/json:
+              schema:
+                type: {object}
+                properties:
+                  dbStatus:
+                    type: "ok"
+        '500':
+          description: Database connection error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
                     type: string
   /next-metro:
     get:
@@ -48,6 +70,40 @@ paths:
                   nextArrival:
                     type: string
                     example: "12:34"
+        '400':
+          description: Paramètre manquant
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+  /last-metro:
+    get:
+      summary: Dernier passage de métro
+      parameters:
+        - in: query
+          name: station
+          schema:
+            type: string
+          required: true
+          description: Nom de la station
+      responses:
+        '200':
+          description: Heure du dernier passage
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  station:
+                    type: string
+                  line:
+                    type: string
+                  lastArrival:
+                    type: string
+                    example: "23:45"
         '400':
           description: Paramètre manquant
           content:

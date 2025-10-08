@@ -4,3 +4,19 @@ CREATE TABLE IF NOT EXISTS config (
     value JSONB NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT now()
 );
+CREATE TABLE IF NOT EXISTS stations (
+    id SERIAL PRIMARY KEY,
+    name TEXT UNIQUE NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS headways (
+    id SERIAL PRIMARY KEY,
+    station_id INTEGER NOT NULL REFERENCES stations(id) ON DELETE CASCADE,
+    minutes INTEGER NOT NULL CHECK (minutes > 0)
+);
+
+CREATE TABLE IF NOT EXISTS last_metro (
+    id SERIAL PRIMARY KEY,
+    station_id INTEGER NOT NULL UNIQUE REFERENCES stations(id) ON DELETE CASCADE,
+    departed_at TIME NOT NULL
+);
